@@ -127,6 +127,15 @@ public:
         void SetVelocitySetPoint(int32_t _vel);
         void SetPositionSetPoint(int32_t _pos);
         bool SetPositionSetPointWithTime(int32_t _pos, float _time);
+        
+        // Telemetry getters for CAN protocol
+        int32_t GetRealPosition() const;
+        int32_t GetEstPosition() const;
+        int32_t GetEstVelocity() const;
+        int32_t GetSoftVelocity() const;
+        int32_t GetSoftPosition() const;
+        
+        // Legacy interface (return raw values)
         float GetPosition(bool _isLap = false);
         float GetVelocity();
         float GetFocCurrent();

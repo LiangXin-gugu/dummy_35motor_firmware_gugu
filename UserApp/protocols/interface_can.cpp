@@ -179,6 +179,111 @@ void OnCanCmd(uint8_t _cmd, uint8_t* _data, uint32_t _len)
             break;
 
 
+            // 0x30~0x3F Controller Query CMDs
+        case 0x30:  // Get Controller Status (compressed format)
+        {
+            // Note: Mode_t and State_t are enums (typically int32_t), but we only send
+            // the low byte since valid values are always < 256. This is safe because:
+            // - Request/Run modes: MODE_STOP=0 to MODE_STEP_DIR=8 (< 256)
+            // - States: STATE_NO_CALIB=5 (< 256)
+            _data[0] = (uint8_t) motor.controller->requestMode;
+            _data[1] = (uint8_t) motor.controller->modeRunning;
+            _data[2] = (uint8_t) motor.controller->state;
+            _data[3] = _data[4] = _data[5] = _data[6] = _data[7] = 0;  // padding
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x30;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+                
+        case 0x31:  // Get DCE Parameters (Low): kp, kv
+        {
+            int32_t kp = motor.config.ctrlParams.dce.kp;
+            int32_t kv = motor.config.ctrlParams.dce.kv;
+            auto* b = (unsigned char*) &kp;
+            for (int i = 0; i < 4; i++) _data[i] = *(b + i);
+            b = (unsigned char*) &kv;
+            for (int i = 0; i < 4; i++) _data[i + 4] = *(b + i);
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x31;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+                
+        case 0x32:  // Get DCE Parameters (High): ki, kd
+        {
+            int32_t ki = motor.config.ctrlParams.dce.ki;
+            int32_t kd = motor.config.ctrlParams.dce.kd;
+            auto* b = (unsigned char*) &ki;
+            for (int i = 0; i < 4; i++) _data[i] = *(b + i);
+            b = (unsigned char*) &kd;
+            for (int i = 0; i < 4; i++) _data[i + 4] = *(b + i);
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x32;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+                
+        case 0x33:  // Get DCE Output (Low): outputKp, outputKi
+        {
+            int32_t output_kp = motor.config.ctrlParams.dce.outputKp;
+            int32_t output_ki = motor.config.ctrlParams.dce.outputKi;
+            auto* b = (unsigned char*) &output_kp;
+            for (int i = 0; i < 4; i++) _data[i] = *(b + i);
+            b = (unsigned char*) &output_ki;
+            for (int i = 0; i < 4; i++) _data[i + 4] = *(b + i);
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x33;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+                
+        case 0x34:  // Get DCE Output (High): outputKd, output
+        {
+            int32_t output_kd = motor.config.ctrlParams.dce.outputKd;
+            int32_t output_total = motor.config.ctrlParams.dce.output;
+            auto* b = (unsigned char*) &output_kd;
+            for (int i = 0; i < 4; i++) _data[i] = *(b + i);
+            b = (unsigned char*) &output_total;
+            for (int i = 0; i < 4; i++) _data[i + 4] = *(b + i);
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x34;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+                
+        case 0x35:  // Get Controller Position Info: realPosition, estPosition
+        {
+            int32_t real_pos = motor.controller->GetRealPosition();
+            int32_t est_pos = motor.controller->GetEstPosition();
+            auto* b = (unsigned char*) &real_pos;
+            for (int i = 0; i < 4; i++) _data[i] = *(b + i);
+            b = (unsigned char*) &est_pos;
+            for (int i = 0; i < 4; i++) _data[i + 4] = *(b + i);
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x35;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+                
+        case 0x36:  // Get Controller Velocity Info: estVelocity, softVelocity
+        {
+            int32_t est_vel = motor.controller->GetEstVelocity();
+            int32_t soft_vel = motor.controller->GetSoftVelocity();
+            auto* b = (unsigned char*) &est_vel;
+            for (int i = 0; i < 4; i++) _data[i] = *(b + i);
+            b = (unsigned char*) &soft_vel;
+            for (int i = 0; i < 4; i++) _data[i + 4] = *(b + i);
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x36;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+                
+        case 0x37:  // Get Controller Soft Position: softPosition, (padding)
+        {
+            int32_t soft_pos = motor.controller->GetSoftPosition();
+            auto* b = (unsigned char*) &soft_pos;
+            for (int i = 0; i < 4; i++) _data[i] = *(b + i);
+            // Padding bytes not needed
+            txHeader.StdId = (boardConfig.canNodeId << 7) | 0x37;
+            CAN_Send(&txHeader, _data);
+        }
+            break;
+        
             // 0x20~0x2F Inquiry CMDs
         case 0x21: // Get Current
         {

@@ -491,6 +491,33 @@ float Motor::Controller::GetFocCurrent()
 }
 
 
+// Telemetry getters for CAN protocol - return raw int32_t values
+int32_t Motor::Controller::GetRealPosition() const
+{
+    return realPosition;
+}
+
+int32_t Motor::Controller::GetEstPosition() const
+{
+    return estPosition;
+}
+
+int32_t Motor::Controller::GetEstVelocity() const
+{
+    return estVelocity;
+}
+
+int32_t Motor::Controller::GetSoftVelocity() const
+{
+    return softVelocity;
+}
+
+int32_t Motor::Controller::GetSoftPosition() const
+{
+    return softPosition;
+}
+
+
 void Motor::Controller::SetCurrentSetPoint(int32_t _cur)
 {
     if (_cur > context->config.motionParams.ratedCurrent)
